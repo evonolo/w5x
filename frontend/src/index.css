@@ -232,7 +232,6 @@ label { display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.8rem; c
 .tile dd small { margin-left: 0.3rem; font-size: 0.95rem; color: var(--muted); font-weight: 400; }
 .tile dd.tile-duration { font-size: 1.05rem; line-height: 1.4; }
 
-.sessions { padding: 0.5rem 0; }
 .empty { color: var(--muted); text-align: center; padding: 2rem; }
 
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; font-variant-numeric: tabular-nums; }
@@ -249,7 +248,44 @@ td { padding: 0.8rem 1.2rem; border-bottom: 1px solid var(--line); }
 tbody tr { transition: background 0.12s var(--ease); }
 tbody tr:hover { background: var(--surface-raised); }
 tbody tr:last-child td { border-bottom: none; }
-td.energy { color: var(--brand); font-weight: 500; white-space: nowrap; }
+
+/* Sitzungszeilen nach Claude-Design-Vorschlag 1a (docs/features/monthly-report.md) */
+.sessions { display: flex; flex-direction: column; gap: 8px; }
+.session-head, .session {
+  display: grid;
+  grid-template-columns: 90px minmax(220px, 1fr) 120px minmax(180px, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+.session-head { padding: 0.25rem 1.4rem 0.1rem; font-size: 0.78rem; color: #7f8480; }
+.session {
+  padding: 0.9rem 1.4rem;
+  background: var(--surface);
+  border-radius: var(--radius-m);
+  transition: background 0.12s var(--ease), transform 0.1s var(--ease);
+}
+.session:hover { background: var(--surface-raised); }
+.session:active { transform: scale(0.995); }
+.s-start { display: flex; flex-direction: column; gap: 1px; }
+.s-weekday { font-size: 0.8rem; color: var(--muted); }
+.s-day { font-size: 1.1rem; font-weight: 500; }
+.s-period { display: flex; align-items: center; gap: 0.5rem; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.s-arrow { color: #6d726e; }
+.s-tag {
+  margin-left: 0.25rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 5px;
+  background: var(--surface-hover);
+  color: var(--muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.s-duration { color: #cfd3d0; font-variant-numeric: tabular-nums; }
+.s-energy { display: flex; align-items: center; gap: 0.9rem; }
+.s-bar { flex: 1; height: 8px; border-radius: 4px; background: var(--surface-hover); overflow: hidden; }
+.s-bar > div { height: 100%; border-radius: 4px; background: var(--brand); transition: width 0.4s var(--ease); }
+.s-kwh { min-width: 6.5rem; text-align: right; font-size: 1.1rem; font-weight: 500; font-variant-numeric: tabular-nums; }
+.s-kwh small { margin-left: 0.3rem; font-size: 0.8rem; font-weight: 400; color: var(--muted); }
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(6px); }
@@ -372,13 +408,19 @@ td.energy { color: var(--brand); font-weight: 500; white-space: nowrap; }
   .tile:last-child { grid-column: 1 / -1; }
   .tile dd { font-size: 1.7rem; }
 
-  /* Sitzungen als gestapelte Zeilen */
-  .sessions thead { display: none; }
-  .sessions tr { display: grid; grid-template-columns: 6.5rem 1fr; gap: 0.15rem 1rem; padding: 0.8rem 1.1rem; border-bottom: 1px solid var(--line); }
-  .sessions tbody tr:last-child { border-bottom: none; }
-  .sessions td { padding: 0; border: none; }
-  .sessions td.energy { grid-row: span 2; align-self: center; font-size: 1.05rem; }
-  .sessions td:not(.energy) { color: var(--muted); font-size: 0.82rem; }
+  /* Sitzungszeilen gestapelt: Datum links, Zeitraum/Dauer Mitte, Energie unten */
+  .session-head { display: none; }
+  .session {
+    grid-template-columns: 52px 1fr auto;
+    grid-template-areas: "start period duration" "start energy energy";
+    gap: 0.5rem 0.9rem;
+    padding: 0.85rem 1rem;
+  }
+  .s-start { grid-area: start; align-self: start; }
+  .s-period { grid-area: period; flex-wrap: wrap; gap: 0.35rem; font-size: 0.95rem; }
+  .s-duration { grid-area: duration; font-size: 0.85rem; color: var(--muted); }
+  .s-energy { grid-area: energy; }
+  .s-kwh { min-width: 0; font-size: 1rem; }
 
   .help { padding: 1rem; }
   .help-table { display: block; overflow-x: auto; }

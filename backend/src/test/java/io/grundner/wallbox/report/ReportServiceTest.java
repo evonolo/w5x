@@ -53,6 +53,20 @@ class ReportServiceTest {
 	}
 
 	@Test
+	void sessionRowsCarryShortFormsAndEnergyShare() { // SR-1, SR-2, HP-2
+		ReportView view = ReportView.of(service(new LoxoneClient()).buildReport(SETTINGS, sample, 2024, 2));
+		var first = view.sessions().get(0);   // 01.02.2024 00:20:53 – 05:20:53, 66.99 kWh
+		assertEquals("Do", first.startWeekday());
+		assertEquals("01.02.", first.startDay());
+		assertEquals("00:20", first.startTime());
+		assertEquals("05:20", first.stopTime());
+		assertEquals("gleicher Tag", first.stopDayLabel());
+		assertEquals("5 h 00 min", first.durationShort());
+		assertEquals(1.0, first.energyShare(), 1e-9);              // größte Sitzung
+		assertEquals(23.32 / 66.99, view.sessions().get(1).energyShare(), 1e-9);
+	}
+
+	@Test
 	void headerComesFromSettings() {
 		MonthlyReport report = service(new LoxoneClient()).buildReport(SETTINGS, sample, 2024, 2);
 		assertEquals("Teststandort", report.locationLabel());

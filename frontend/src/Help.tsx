@@ -178,8 +178,17 @@ export default function Help() {
                 weiter (z. B. <code>108 Stunden, 39 Minuten, 00 Sekunden</code>) und werden nicht in
                 Tage umgerechnet.
               </li>
-              <li>Zeitpunkte als <code>TT.MM.JJJJ hh:mm:ss</code>.</li>
+              <li>Zeitpunkte als <code>TT.MM.JJJJ hh:mm:ss</code> (im PDF).</li>
             </ul>
+          </li>
+          <li>
+            <strong>Sitzungszeilen in der App:</strong> Zur besseren Lesbarkeit zeigt jede Zeile
+            Kurzformen: Wochentag und Datum des Starts, die Uhrzeiten ohne Sekunden
+            (<code>19:06 → 06:24</code>) mit dem Endtag daneben (z. B. <code>Do 01.10.</code> oder
+            „gleicher Tag“) und die Dauer als <code>11 h 17 min</code>. Die Sekunden werden dabei
+            abgeschnitten, nicht gerundet. Die exakten Werte erscheinen, wenn Sie mit der Maus auf
+            die Zeile zeigen; im PDF stehen sie immer. Der grüne Balken zeigt die Energie im
+            Verhältnis zur größten Sitzung des Monats.
           </li>
         </ol>
       </section>
@@ -259,8 +268,9 @@ export default function Help() {
             Sekunden = verbleibender Rest.
           </li>
           <li>
-            <strong>Einzelne Zeile prüfen.</strong> Für eine Tabellenzeile: Stop muss mit dem
-            Zeitpunkt aus der Log-Zeile übereinstimmen, Start = Stop − Dauer.
+            <strong>Einzelne Zeile prüfen.</strong> Für eine Sitzung: Stop muss mit dem
+            Zeitpunkt aus der Log-Zeile übereinstimmen, Start = Stop − Dauer. Die sekundengenauen
+            Werte zeigt der Tooltip der Zeile oder das PDF.
           </li>
         </ol>
         <p>

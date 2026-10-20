@@ -69,7 +69,14 @@ Query-Parameter:
       "durationFormatted": "05 Stunden, 00 Minuten, 00 Sekunden",
       "start": "01.02.2024 00:20:53",
       "stop": "01.02.2024 05:20:53",
-      "user": "-"
+      "user": "-",
+      "startWeekday": "Do",
+      "startDay": "01.02.",
+      "startTime": "00:20",
+      "stopTime": "05:20",
+      "stopDayLabel": "gleicher Tag",
+      "durationShort": "5 h 00 min",
+      "energyShare": 1.0
     }
   ]
 }
@@ -100,6 +107,9 @@ zugelassen (Methoden `GET`, `PUT`).
 - 2026-10-20: `GET /api/locations` und Parameter `location` entfernt (nur noch ein
   Miniserver); `GET`/`PUT /api/settings` neu; 404 für unbekannte Standorte entfällt,
   409 für unvollständige Einstellungen neu; PDF-Dateiname ohne Standort.
+- 2026-10-20: Sitzungen um Kurzformen für die App ergänzt (`startWeekday`,
+  `startDay`, `startTime`, `stopTime`, `stopDayLabel`, `durationShort`,
+  `energyShare` 0–1), siehe [Sitzungszeilen](../features/monthly-report.md#sitzungszeilen-in-der-app).
 - 2026-10-20: Feld `person` aus Einstellungen und Bericht entfernt (wurde nirgends
   angezeigt). Unbekannte Felder in einer bestehenden Einstellungsdatei werden
   ignoriert.

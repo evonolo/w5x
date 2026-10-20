@@ -3,6 +3,7 @@ package io.grundner.wallbox.report;
 import io.grundner.wallbox.domain.ChargingSession;
 import io.grundner.wallbox.domain.MonthlyReport;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -24,21 +25,40 @@ public record ReportView(
 		int sessionCount,
 		List<SessionView> sessions) {
 
+	/**
+	 * Eine Sitzungszeile. Neben den exakten Werten enthält sie die Kurzformen der
+	 * App-Darstellung (docs/features/monthly-report.md, „Sitzungszeilen in der App“).
+	 */
 	public record SessionView(
 			String energyKwh,
 			String durationFormatted,
 			String start,
 			String stop,
-			String user) {
+			String user,
+			String startWeekday,
+			String startDay,
+			String startTime,
+			String stopTime,
+			String stopDayLabel,
+			String durationShort,
+			double energyShare) {
 	}
+
+	private static final String[] WEEKDAYS = {"Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"};
 
 	private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 	private static final DateTimeFormatter DATETIME = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+	private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd.MM.");
 
 	public static ReportView of(MonthlyReport report) {
+		// SR-2: Bezug ist die energiereichste Sitzung dieses Berichts
+		double maxEnergy = report.sessions().stream()
+				.mapToDouble(ChargingSession::energyKwh)
+				.max()
+				.orElse(0);
 		List<SessionView> sessionViews = report.sessions().stream()
-				.map(ReportView::toSessionView)
+				.map(s -> toSessionView(s, maxEnergy))
 				.toList();
 
 		return new ReportView(
@@ -54,13 +74,37 @@ public record ReportView(
 				sessionViews);
 	}
 
-	private static SessionView toSessionView(ChargingSession s) {
+	private static SessionView toSessionView(ChargingSession s, double maxEnergy) {
 		return new SessionView(
 				formatEnergy(s.energyKwh()),
 				formatDuration(s.durationSeconds()),
 				s.start().format(DATETIME),
 				s.stop().format(DATETIME),
-				s.user());
+				s.user(),
+				weekday(s.start()),
+				s.start().format(DAY),
+				s.start().format(TIME),
+				s.stop().format(TIME),
+				stopDayLabel(s.start(), s.stop()),
+				formatDurationShort(s.durationSeconds()),
+				maxEnergy > 0 ? s.energyKwh() / maxEnergy : 0);
+	}
+
+	static String weekday(LocalDateTime dateTime) {
+		return WEEKDAYS[dateTime.getDayOfWeek().getValue() - 1];
+	}
+
+	static String stopDayLabel(LocalDateTime start, LocalDateTime stop) {
+		return start.toLocalDate().equals(stop.toLocalDate())
+				? "gleicher Tag"
+				: weekday(stop) + " " + stop.format(DAY);
+	}
+
+	/** "H h mm min", Sekunden abgeschnitten (SR-1). */
+	static String formatDurationShort(long totalSeconds) {
+		long hours = totalSeconds / 3600;
+		long minutes = (totalSeconds % 3600) / 60;
+		return String.format(Locale.ROOT, "%d h %02d min", hours, minutes);
 	}
 
 	static String formatEnergy(double kwh) {

@@ -175,25 +175,38 @@ function Report({ report }: { report: ReportView }) {
       {report.sessions.length === 0 ? (
         <p className="card empty">Keine Ladesitzungen in diesem Zeitraum.</p>
       ) : (
-        <div className="card sessions">
-          <table>
-            <thead>
-              <tr>
-                <th>Energie</th>
-                <th>Dauer</th>
-                <th>Zeitraum</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.sessions.map((s, i) => (
-                <tr key={i}>
-                  <td className="energy" data-label="Energie">{s.energyKwh} kWh</td>
-                  <td data-label="Dauer">{s.durationFormatted}</td>
-                  <td data-label="Zeitraum">{s.start} – {s.stop}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="sessions" role="table" aria-label="Ladesitzungen">
+          <div className="session-head" role="row">
+            <span role="columnheader">Start</span>
+            <span role="columnheader">Zeitraum</span>
+            <span role="columnheader">Dauer</span>
+            <span role="columnheader">Energie</span>
+          </div>
+          {report.sessions.map((s, i) => (
+            <div
+              key={i}
+              className="session"
+              role="row"
+              // SR-1: exakte Werte im Tooltip
+              title={`${s.start} – ${s.stop}\nDauer: ${s.durationFormatted}`}
+            >
+              <div className="s-start" role="cell">
+                <span className="s-weekday">{s.startWeekday}</span>
+                <span className="s-day">{s.startDay}</span>
+              </div>
+              <div className="s-period" role="cell">
+                <span>{s.startTime}</span>
+                <span className="s-arrow">→</span>
+                <span>{s.stopTime}</span>
+                <span className="s-tag">{s.stopDayLabel}</span>
+              </div>
+              <div className="s-duration" role="cell">{s.durationShort}</div>
+              <div className="s-energy" role="cell">
+                <div className="s-bar"><div style={{ width: `${(s.energyShare * 100).toFixed(1)}%` }} /></div>
+                <div className="s-kwh">{s.energyKwh}<small>kWh</small></div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </section>

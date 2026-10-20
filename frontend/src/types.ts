@@ -24,6 +24,14 @@ export interface SessionView {
   start: string
   stop: string
   user: string
+  // Kurzformen der Sitzungszeilen (docs/features/monthly-report.md, SR-1..SR-3)
+  startWeekday: string
+  startDay: string
+  startTime: string
+  stopTime: string
+  stopDayLabel: string
+  durationShort: string
+  energyShare: number
 }
 
 export interface ReportView {

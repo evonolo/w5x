@@ -44,6 +44,28 @@ Kosten werden **nicht** dargestellt (Vision / MR-4).
 
 - Die Dauer-Stunden werden **nicht** auf 24 h begrenzt (Gesamtdauer kann > 24 h
   sein), zweistellig aufgefüllt.
+- Diese Formate gelten für das PDF, die Summen und die exakten Werte. Die
+  Sitzungszeilen der App verwenden zusätzlich die Kurzformen unten.
+
+## Sitzungszeilen in der App
+
+Jede Sitzung erscheint als eigene Zeile (Kachel) mit vier Spalten (Entwurf:
+Claude Design, Vorschlag 1a „Dunkles Dashboard mit Kacheln“, 2026-10-20):
+
+| Spalte | Inhalt | Beispiel |
+|--------|--------|----------|
+| Start | Wochentag (zweistellig) über dem Datum `dd.MM.` des Starts | `Mi` / `30.09.` |
+| Zeitraum | Start- und Enduhrzeit `HH:mm → HH:mm`, dahinter der Endtag: „gleicher Tag" oder Wochentag + `dd.MM.` | `19:06 → 06:24` `Do 01.10.` |
+| Dauer | `H h mm min` | `11 h 17 min` |
+| Energie | Balken + Wert (zwei Nachkommastellen, Punkt) | `22.50 kWh` |
+
+- **SR-1**: Die Kurzformen lassen die Sekunden weg (abgeschnitten, nicht gerundet).
+  Die exakten Zeitpunkte und die exakte Dauer stehen im Tooltip der Zeile.
+- **SR-2**: Die Balkenlänge ist die Energie der Sitzung im Verhältnis zur
+  energiereichsten Sitzung **desselben Berichts** (diese = voller Balken).
+- **SR-3**: Die Energie wird nicht gekürzt (zwei Nachkommastellen wie Summe und PDF),
+  damit Zeilen und Summe nachrechenbar bleiben.
+- Wochentage: Mo, Di, Mi, Do, Fr, Sa, So.
 
 ## Akzeptanzkriterien
 
