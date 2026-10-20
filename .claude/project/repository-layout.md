@@ -18,6 +18,7 @@ w5x/
       report/              ReportService, ReportView (View-Modell + Formatierung)
       loxone/              LoxoneClient (Abruf der wallbox.log)
       settings/            Settings, SettingsStore (lokale Einstellungsdatei, ADR 0003)
+      desktop/             DesktopLauncher, AppIcon (Windows-Desktop-App, ADR 0004)
       pdf/                 PdfRenderer (Thymeleaf -> jsoup -> openhtmltopdf)
       web/                 ReportController, SettingsController, GlobalExceptionHandler, WebConfig (CORS)
     src/main/resources/
@@ -25,6 +26,8 @@ w5x/
       templates/report.html Thymeleaf-Berichtsvorlage
     src/test/java/...      Parser-, Report-, Loxone-Client-, Settings-Tests
     src/test/resources/samples/wallbox-sample.log synthetische Beispiel-Logdatei
+  installer/windows/       Inno-Setup-Skript, app.ico (ADR 0004)
+  .github/workflows/       CI: Windows-Installer x64/ARM64
   frontend/                React + TS + Vite
     src/                   App, API-Client, Komponenten (Settings.tsx: Einstellungen, Help.tsx: Hilfeseite,
                            Icons.tsx: Symbole, index.css: Theme gemäß docs/ui/theme.md)

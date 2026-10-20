@@ -31,7 +31,9 @@ des Vortags (Sommerzeit). Berechnet wird 22:00 Uhr.
 
 ## OQ-2: Erreichbarkeit des Backends im Netzwerk
 
-- Status: offen
+- Status: teilweise beantwortet (2026-10-20): Die ausgelieferte Windows-App
+  lauscht nur auf `127.0.0.1` ([ADR 0004](decisions/0004-windows-desktop-app.md)).
+  Offen bleibt das Verhalten im Entwicklungsaufbau (`./gradlew dev`, `bootRun`).
 - Seit: 2026-10-20
 - Betrifft: [ADR 0003](decisions/0003-local-settings-file.md), [Einstellungen](features/settings.md)
 

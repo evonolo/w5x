@@ -19,10 +19,12 @@ Node-RED-Flows.
 | [features/help-page.md](features/help-page.md) | Feature „Hilfeseite" (Erklärung der Log-Auswertung, manuelle Prüfung) |
 | [ui/theme.md](ui/theme.md) | UI: Theme und Bedienung (Loxone-Anmutung, TH-*) |
 | [api/report-api.md](api/report-api.md) | REST-API-Contract |
+| [operations/windows-app.md](operations/windows-app.md) | Betrieb der Windows-Desktop-App (Installation, Bedienung, Daten) |
 | [open-questions.md](open-questions.md) | Offene Fragen (nicht autoritativ) |
 | [decisions/0001-stateless-report.md](decisions/0001-stateless-report.md) | ADR: Stateless-Report, kein Persistenzspeicher |
 | [decisions/0002-pdf-openhtmltopdf.md](decisions/0002-pdf-openhtmltopdf.md) | ADR: PDF-Erzeugung mit openhtmltopdf |
 | [decisions/0003-local-settings-file.md](decisions/0003-local-settings-file.md) | ADR: Einstellungen in lokaler Datei des Backends |
+| [decisions/0004-windows-desktop-app.md](decisions/0004-windows-desktop-app.md) | ADR: Auslieferung als Windows-Desktop-App |
 
 ## Herkunft
 

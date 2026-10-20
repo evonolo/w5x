@@ -51,3 +51,27 @@ W5X_SETTINGSFILE=/tmp/w5x-test/settings.json ./gradlew dev
 - Die Beispiel-Logdatei liegt unter `src/test/resources/samples/` und ist nur
   Testgrundlage.
 - Zugangsdaten gehören nicht ins Repo.
+
+## Windows-Installer (ADR 0004)
+
+```bash
+./gradlew desktopImage                          # App-Image der aktuellen Plattform
+./gradlew windowsInstaller -PwinArch=x64        # nur unter Windows, braucht Inno Setup 6
+```
+
+- Beide Tasks betten das gebaute Frontend automatisch ein (`buildFrontend` →
+  `static/`). Ein normaler `build`/`bootRun` tut das nicht; erzwingen mit
+  `-PwithFrontend`.
+- `jlinkRuntime` erzeugt die Laufzeit aus der Modulliste in `build.gradle`. Wird
+  ein JDK-Modul fehlen (z. B. nach neuer Bibliothek), fällt das erst beim Start des
+  App-Images auf → nach Änderungen an Abhängigkeiten `desktopImage` bauen und
+  starten (Rauchtest: Oberfläche, Bericht mit echtem Abruf, PDF).
+- Lokaler Rauchtest mit separater Einstellungsdatei, z. B. unter macOS:
+  `W5X_SETTINGSFILE=/tmp/w5x-test/settings.json build/desktop/image/Ladesitzungsbericht.app/Contents/MacOS/Ladesitzungsbericht`
+- Die Versionsnummer (`version` in `build.gradle`) muss numerisch sein und darf
+  nicht mit 0 beginnen (jpackage).
+- Windows-Installer entstehen über GitHub Actions (`.github/workflows/windows-installer.yml`):
+  manuell starten („Run workflow“) oder Tag `v*` pushen. Ergebnis als Artefakt
+  `Ladesitzungsbericht-x64-setup` bzw. `-arm64-setup`.
+- `installer/windows/app.ico` ist aus `AppIcon` erzeugt; bei Änderung des Symbols
+  neu erzeugen.

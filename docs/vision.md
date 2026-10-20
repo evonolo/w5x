@@ -38,3 +38,8 @@ Eine Java-Backend-Anwendung (Spring Boot) mit REST-API und PDF-Erzeugung sowie e
 React-Frontend zur Pflege der Einstellungen, zur Auswahl des Zeitraums und zur
 Berichtsanzeige.
 Monorepo mit `backend/` und `frontend/`.
+
+Ausgeliefert wird die App als Windows-Desktop-App mit Installer pro Benutzer für
+den Betrieb auf dem Notebook des Nutzers
+([ADR 0004](decisions/0004-windows-desktop-app.md),
+[Betrieb](operations/windows-app.md)).

@@ -5,7 +5,8 @@ plugins {
 }
 
 group = 'io.grundner'
-version = '0.0.1-SNAPSHOT'
+// numerisch, da auch Version der Windows-App (jpackage/Inno Setup, ADR 0004)
+version = '1.0.0'
 
 java {
 	toolchain {
@@ -37,12 +38,14 @@ tasks.named('test') {
 // --- Lokale Entwicklung: `./gradlew dev` startet Vite (Port 3000) und Backend (Port 8080) ---
 
 def frontendDir = layout.projectDirectory.dir('../frontend')
+def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+def npm = isWindows ? 'npm.cmd' : 'npm'
 
 tasks.register('npmInstall', Exec) {
 	group = 'development'
 	description = 'Installiert die Frontend-Abhängigkeiten.'
 	workingDir frontendDir
-	commandLine 'npm', 'install'
+	commandLine npm, 'install'
 	inputs.files(frontendDir.file('package.json'), frontendDir.file('package-lock.json'))
 	outputs.dir(frontendDir.dir('node_modules'))
 }
@@ -61,7 +64,8 @@ abstract class FrontendDevServer implements BuildService<Params>, AutoCloseable 
 
 	synchronized void start() {
 		if (process?.alive) return
-		def started = new ProcessBuilder('npm', 'run', 'dev')
+		def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
+		def started = new ProcessBuilder(npmCommand, 'run', 'dev')
 				.directory(parameters.workingDir.get().asFile)
 				.redirectErrorStream(true)
 				.start()
@@ -100,4 +104,107 @@ tasks.register('dev') {
 	group = 'development'
 	description = 'Startet Frontend (http://localhost:3000) und Backend (Port 8080) gemeinsam.'
 	dependsOn 'frontendDev', 'bootRun'
+}
+
+// --- Windows-Desktop-App (ADR 0004, docs/operations/windows-app.md) ---
+//
+//   ./gradlew desktopImage                     App-Image der aktuellen Plattform (zum Testen)
+//   ./gradlew windowsInstaller -PwinArch=x64   Installer pro Benutzer (nur unter Windows)
+
+def appName = 'Ladesitzungsbericht'
+def desktopDir = layout.buildDirectory.dir('desktop')
+def packagingTasks = ['desktopImage', 'windowsInstaller']
+// Frontend nur einbetten, wenn ausdrücklich verlangt oder für die Desktop-App gebaut wird
+def withFrontend = project.hasProperty('withFrontend') ||
+		gradle.startParameter.taskNames.any { name -> packagingTasks.any { name.endsWith(it) } }
+
+tasks.register('buildFrontend', Exec) {
+	group = 'desktop'
+	description = 'Baut das Frontend (Vite) nach frontend/dist.'
+	dependsOn 'npmInstall'
+	workingDir frontendDir
+	commandLine npm, 'run', 'build'
+	inputs.dir(frontendDir.dir('src'))
+	inputs.files(frontendDir.file('index.html'), frontendDir.file('package-lock.json'), frontendDir.file('vite.config.ts'))
+	outputs.dir(frontendDir.dir('dist'))
+}
+
+if (withFrontend) {
+	tasks.named('processResources', ProcessResources) {
+		dependsOn 'buildFrontend'
+		from(frontendDir.dir('dist')) { into 'static' }
+	}
+}
+
+def toolchainHome = javaToolchains.launcherFor {
+	languageVersion = JavaLanguageVersion.of(21)
+}.map { it.metadata.installationPath.asFile.absolutePath }
+
+def jdkTool = { String tool -> toolchainHome.get() + '/bin/' + tool + (isWindows ? '.exe' : '') }
+
+// Module der mitgelieferten Laufzeit; per Smoke-Test des App-Images geprüft
+def runtimeModules = [
+		'java.base', 'java.desktop', 'java.instrument', 'java.logging', 'java.management',
+		'java.naming', 'java.net.http', 'java.prefs', 'java.scripting', 'java.security.jgss',
+		'java.sql', 'java.xml', 'jdk.charsets', 'jdk.crypto.ec', 'jdk.localedata',
+		'jdk.management', 'jdk.net', 'jdk.unsupported', 'jdk.zipfs'
+].join(',')
+
+tasks.register('jlinkRuntime', Exec) {
+	group = 'desktop'
+	description = 'Erzeugt eine schlanke Java-Laufzeit für die Desktop-App.'
+	def output = desktopDir.map { it.dir('runtime') }
+	outputs.dir(output)
+	doFirst { delete output }
+	commandLine jdkTool('jlink'), '--add-modules', runtimeModules,
+			'--include-locales=de,en', '--strip-debug', '--no-header-files', '--no-man-pages',
+			'--output', output.get().asFile.absolutePath
+}
+
+tasks.register('desktopImage', Exec) {
+	group = 'desktop'
+	description = 'Erzeugt das App-Image (Launcher + Laufzeit + App) der aktuellen Plattform.'
+	dependsOn 'bootJar', 'jlinkRuntime'
+	def input = desktopDir.map { it.dir('input') }
+	def output = desktopDir.map { it.dir('image') }
+	outputs.dir(output)
+	doFirst {
+		delete input, output
+		copy {
+			from tasks.named('bootJar')
+			into input
+			rename { 'app.jar' }
+		}
+	}
+	def arguments = [
+			jdkTool('jpackage'), '--type', 'app-image',
+			'--name', appName,
+			'--app-version', project.version,
+			'--vendor', 'Stephan Grundner',
+			'--input', input.get().asFile.absolutePath,
+			'--main-jar', 'app.jar',
+			'--runtime-image', desktopDir.get().dir('runtime').asFile.absolutePath,
+			'--arguments', '--desktop',
+			'--java-options', '-Dfile.encoding=UTF-8',
+			'--java-options', '-Xmx256m',
+			'--dest', output.get().asFile.absolutePath]
+	if (isWindows) {
+		arguments += ['--icon', rootProject.file('../installer/windows/app.ico').absolutePath]
+	}
+	commandLine arguments
+}
+
+tasks.register('windowsInstaller', Exec) {
+	group = 'desktop'
+	description = 'Erzeugt den Installer pro Benutzer mit Inno Setup (nur unter Windows).'
+	dependsOn 'desktopImage'
+	onlyIf('nur unter Windows') { isWindows }
+	def arch = project.findProperty('winArch') ?: 'x64'
+	def iscc = project.findProperty('iscc') ?: 'iscc'
+	commandLine iscc,
+			"/DAppVersion=${project.version}",
+			"/DArch=${arch}",
+			"/DSourceDir=${desktopDir.get().dir('image/' + appName).asFile.absolutePath}",
+			"/O${desktopDir.get().dir('installer').asFile.absolutePath}",
+			rootProject.file('../installer/windows/ladesitzungsbericht.iss').absolutePath
 }

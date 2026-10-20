@@ -1,0 +1,62 @@
+# Windows-Installer pro Benutzer bauen (ADR 0004, docs/operations/windows-app.md).
+# x64 immer; ARM64 als Best-Effort – ein Fehlschlag dort blockiert x64 nicht.
+name: Windows-Installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      arm64:
+        description: 'Zusätzlich ARM64 bauen'
+        type: boolean
+        default: true
+  push:
+    tags: ['v*']
+
+jobs:
+  installer:
+    name: Installer ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ${{ fromJSON((github.event_name == 'workflow_dispatch' && !inputs.arm64) && '["x64"]' || '["x64","arm64"]') }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'windows-11-arm' || 'windows-latest' }}
+    continue-on-error: ${{ matrix.arch == 'arm64' }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: '21'
+          architecture: ${{ matrix.arch == 'arm64' && 'aarch64' || 'x64' }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          architecture: ${{ matrix.arch }}
+
+      - name: Inno Setup bereitstellen
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          if (-not (Test-Path $iscc)) { throw "Inno Setup nicht gefunden: $iscc" }
+          "ISCC=$iscc" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Tests
+        working-directory: backend
+        run: ./gradlew.bat test --no-daemon
+
+      - name: Installer bauen
+        working-directory: backend
+        run: ./gradlew.bat windowsInstaller --no-daemon "-PwinArch=${{ matrix.arch }}" "-Piscc=$env:ISCC"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ladesitzungsbericht-${{ matrix.arch }}-setup
+          path: backend/build/desktop/installer/*.exe
+          if-no-files-found: error

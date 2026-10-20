@@ -35,6 +35,12 @@ npm install
 npm run dev
 ```
 
+## Windows-App
+
+Für den Betrieb auf einem Windows-Rechner gibt es einen Installer pro Benutzer
+(ohne Administratorrechte), gebaut über GitHub Actions („Windows-Installer“).
+Installation, Bedienung und Datenablage: [docs/operations/windows-app.md](docs/operations/windows-app.md).
+
 ## Einstellungen und Zugangsdaten
 
 Die App wertet genau **einen** Loxone-Miniserver aus. Seriennummer, Benutzer und
