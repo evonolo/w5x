@@ -1,5 +1,7 @@
 # Windows-Installer pro Benutzer bauen (ADR 0004, docs/operations/windows-app.md).
 # x64 immer; ARM64 als Best-Effort – ein Fehlschlag dort blockiert x64 nicht.
+# Bei einem Tag v* hängt jeder Build seine EXE selbst an das GitHub-Release, damit
+# das x64-Release nicht auf einen (evtl. nicht verfügbaren) ARM-Runner wartet.
 name: Windows-Installer
 
 on:
@@ -11,6 +13,9 @@ on:
         default: true
   push:
     tags: ['v*']
+
+permissions:
+  contents: write
 
 jobs:
   installer:
@@ -60,3 +65,26 @@ jobs:
           name: Ladesitzungsbericht-${{ matrix.arch }}-setup
           path: backend/build/desktop/installer/*.exe
           if-no-files-found: error
+
+      - name: An Release anhängen
+        if: startsWith(github.ref, 'refs/tags/v')
+        working-directory: backend/build/desktop/installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          $notes = @"
+          Windows-Installer pro Benutzer (ohne Administratorrechte).
+
+          - **x64**: Windows auf Intel/AMD – läuft auch auf Windows-ARM (emuliert)
+          - **arm64**: Windows auf ARM (z. B. Snapdragon), falls vorhanden
+
+          Beim ersten Start meldet Windows ggf. „Der Computer wurde durch Windows geschützt“:
+          **Weitere Informationen → Trotzdem ausführen**.
+
+          Bedienung und Datenablage: docs/operations/windows-app.md
+          "@
+          # Der erste fertige Build legt das Release an; ein Fehler „existiert bereits“ ist erwartet
+          gh release create $env:TAG --repo $env:GITHUB_REPOSITORY --title "Ladesitzungsbericht $env:TAG" --notes $notes 2>$null
+          gh release upload $env:TAG (Get-ChildItem *.exe).FullName --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { throw "Upload fehlgeschlagen" }

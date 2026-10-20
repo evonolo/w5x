@@ -4,6 +4,8 @@ Auslieferung gemäß [ADR 0004](../decisions/0004-windows-desktop-app.md).
 
 ## Installation
 
+- Bezug: GitHub-Release der jeweiligen Version (Repository `evonolo/w5x`, Abschnitt
+  „Releases“).
 - Datei `Ladesitzungsbericht-<Version>-x64-setup.exe` (Windows auf Intel/AMD) bzw.
   `…-arm64-setup.exe` (Windows auf ARM, z. B. Snapdragon) ausführen.
 - Beim ersten Start meldet Windows ggf. „Der Computer wurde durch Windows

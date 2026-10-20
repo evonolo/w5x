@@ -71,7 +71,9 @@ W5X_SETTINGSFILE=/tmp/w5x-test/settings.json ./gradlew dev
 - Die Versionsnummer (`version` in `build.gradle`) muss numerisch sein und darf
   nicht mit 0 beginnen (jpackage).
 - Windows-Installer entstehen über GitHub Actions (`.github/workflows/windows-installer.yml`):
-  manuell starten („Run workflow“) oder Tag `v*` pushen. Ergebnis als Artefakt
-  `Ladesitzungsbericht-x64-setup` bzw. `-arm64-setup`.
+  - **Release:** Tag `v<version>` (passend zu `version` in `build.gradle`) auf `main`
+    pushen → die EXE-Dateien werden an das GitHub-Release des Tags gehängt.
+  - **Testbuild:** manuell starten („Run workflow“) → nur Artefakte
+    `Ladesitzungsbericht-x64-setup` bzw. `-arm64-setup`, kein Release.
 - `installer/windows/app.ico` ist aus `AppIcon` erzeugt; bei Änderung des Symbols
   neu erzeugen.
