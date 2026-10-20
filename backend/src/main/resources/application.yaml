@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: wallbox-report
+
+# Einstellungen (Seriennummer, Zugangsdaten, Berichtskopf) pflegt der Nutzer in der
+# App; sie werden in dieser Datei gespeichert (ADR 0003, docs/features/settings.md).
+w5x:
+  settings-file: "${user.home}/.w5x/settings.json"

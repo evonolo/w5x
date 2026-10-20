@@ -1,0 +1,103 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '4.1.0'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'io.grundner'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	// HTML -> PDF (reine JVM, kein Browser) – siehe ADR 0002
+	implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
+	// Aufbereitung des Thymeleaf-Outputs zu wohlgeformtem XHTML
+	implementation 'org.jsoup:jsoup:1.18.1'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+// --- Lokale Entwicklung: `./gradlew dev` startet Vite (Port 3000) und Backend (Port 8080) ---
+
+def frontendDir = layout.projectDirectory.dir('../frontend')
+
+tasks.register('npmInstall', Exec) {
+	group = 'development'
+	description = 'Installiert die Frontend-Abhängigkeiten.'
+	workingDir frontendDir
+	commandLine 'npm', 'install'
+	inputs.files(frontendDir.file('package.json'), frontendDir.file('package-lock.json'))
+	outputs.dir(frontendDir.dir('node_modules'))
+}
+
+/**
+ * Hält den Vite-Dev-Server für die Dauer eines Builds am Leben. Gradle schließt den
+ * Service am Build-Ende – auch bei Abbruch per Ctrl+C –, damit kein Vite-Prozess
+ * im Gradle-Daemon zurückbleibt.
+ */
+abstract class FrontendDevServer implements BuildService<Params>, AutoCloseable {
+	interface Params extends BuildServiceParameters {
+		DirectoryProperty getWorkingDir()
+	}
+
+	private Process process
+
+	synchronized void start() {
+		if (process?.alive) return
+		def started = new ProcessBuilder('npm', 'run', 'dev')
+				.directory(parameters.workingDir.get().asFile)
+				.redirectErrorStream(true)
+				.start()
+		process = started
+		Thread.startDaemon('vite-output') {
+			started.inputStream.eachLine { println "[vite] $it" }
+		}
+	}
+
+	@Override
+	synchronized void close() {
+		if (process == null) return
+		// npm startet Vite als Kindprozess – den ganzen Prozessbaum beenden.
+		process.toHandle().descendants().forEach { it.destroy() }
+		process.destroy()
+	}
+}
+
+def frontendDevServer = gradle.sharedServices.registerIfAbsent('frontendDevServer', FrontendDevServer) {
+	parameters.workingDir = frontendDir
+}
+
+tasks.register('frontendDev') {
+	group = 'development'
+	description = 'Startet den Vite-Dev-Server (Port 3000) im Hintergrund.'
+	dependsOn 'npmInstall'
+	usesService frontendDevServer
+	doLast { frontendDevServer.get().start() }
+}
+
+tasks.named('bootRun') {
+	mustRunAfter 'frontendDev'
+}
+
+tasks.register('dev') {
+	group = 'development'
+	description = 'Startet Frontend (http://localhost:3000) und Backend (Port 8080) gemeinsam.'
+	dependsOn 'frontendDev', 'bootRun'
+}

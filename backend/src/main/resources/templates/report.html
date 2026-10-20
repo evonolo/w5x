@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Ladesitzungsbericht</title>
+    <style>
+        body {
+            font-size: 6.5pt;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            border-collapse: collapse;
+        }
+
+        table thead th {
+            text-align: left;
+            border-bottom: 0.5pt solid #000;
+            padding-bottom: 2pt;
+        }
+
+        table tbody td {
+            padding-top: 1pt;
+            vertical-align: top;
+        }
+
+        h1 {
+            font-size: 24pt;
+            margin: 0 0 4pt 0;
+        }
+
+        .header {
+            font-size: 12pt;
+            padding-bottom: 0.5cm;
+            padding-top: 0.5cm;
+        }
+
+        .header-value {
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <h1>Ladesitzungsbericht</h1>
+    <p>
+        <span th:text="${report.location}">Ort</span> am
+        <span th:text="${report.generatedDate}">01.01.2000</span>,
+        <span th:text="${report.generatedTime}">00:00</span> Uhr
+    </p>
+    <hr/>
+
+    <div class="header">
+        Wallbox: <span class="header-value" th:text="${report.wallbox}">-</span> <br/>
+        Berichtszeitraum: <span class="header-value"
+            th:text="${#numbers.formatInteger(report.month, 2)} + '/' + ${report.year}">00/0000</span> <br/>
+        Gesamte Ladedauer: <span class="header-value" th:text="${report.totalDurationFormatted}">-</span> <br/>
+        Gesamte Energie: <span class="header-value" th:text="${report.totalEnergyKwh} + ' kWh'">-</span> <br/>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Energie</th>
+            <th>Dauer</th>
+            <th>Datum</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="s : ${report.sessions}">
+            <td th:text="${s.energyKwh} + ' kWh'">0 kWh</td>
+            <td th:text="${s.durationFormatted}">-</td>
+            <td th:text="${s.start} + ' - ' + ${s.stop}">-</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

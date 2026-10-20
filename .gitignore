@@ -1,0 +1,10 @@
+# Zugangsdaten nie einchecken
+zugansdaten.txt
+zugangsdaten.txt
+*.env
+.env
+
+# Betriebssystem / IDE
+.DS_Store
+.idea/
+*.iml

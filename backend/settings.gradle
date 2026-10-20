@@ -1,0 +1,7 @@
+plugins {
+	// Erlaubt Gradle, die Java-21-Toolchain automatisch zu beschaffen,
+	// falls lokal nur ein anderes JDK installiert ist.
+	id 'org.gradle.toolchains.foojay-resolver-convention' version '0.9.0'
+}
+
+rootProject.name = 'wallbox-report'

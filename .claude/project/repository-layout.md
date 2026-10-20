@@ -1,0 +1,36 @@
+# Repository-Layout
+
+Monorepo mit zwei Komponenten.
+
+```text
+w5x/
+  CLAUDE.md                universelles Arbeitsmodell (§1)
+  docs/                    autoritatives Projektwissen (Index: docs/README.md)
+  .claude/                 Arbeitskonventionen (Profil, Projektregeln)
+  backend/                 Spring-Boot-App (Java 21, Gradle Groovy)
+    build.gradle
+    settings.gradle
+    gradlew, gradle/       Gradle-Wrapper (9.x)
+    src/main/java/io/grundner/wallbox/
+      WallboxReportApplication.java
+      domain/              ChargingSession, MonthlyReport
+      parser/              WallboxLogParser
+      report/              ReportService, ReportView (View-Modell + Formatierung)
+      loxone/              LoxoneClient (Abruf der wallbox.log)
+      settings/            Settings, SettingsStore (lokale Einstellungsdatei, ADR 0003)
+      pdf/                 PdfRenderer (Thymeleaf -> jsoup -> openhtmltopdf)
+      web/                 ReportController, SettingsController, GlobalExceptionHandler, WebConfig (CORS)
+    src/main/resources/
+      application.yaml     Ablageort der Einstellungsdatei
+      templates/report.html Thymeleaf-Berichtsvorlage
+    src/test/java/...      Parser-, Report-, Loxone-Client-, Settings-Tests
+    src/test/resources/samples/wallbox-sample.log synthetische Beispiel-Logdatei
+  frontend/                React + TS + Vite
+    src/                   App, API-Client, Komponenten (Settings.tsx: Einstellungen, Help.tsx: Hilfeseite)
+```
+
+## Namenskonventionen
+
+- Java-Package-Wurzel: `io.grundner.wallbox`.
+- Domänenbegriffe folgen `docs/domain/*` (ChargingSession, MonthlyReport, Settings).
+- REST-Pfade folgen `docs/api/report-api.md`.
