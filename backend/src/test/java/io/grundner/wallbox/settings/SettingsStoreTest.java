@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /** Regeln ST-1..ST-7 aus docs/features/settings.md. */
 class SettingsStoreTest {
@@ -91,6 +93,8 @@ class SettingsStoreTest {
 
 	@Test
 	void fileIsOnlyAccessibleByOwner() throws Exception { // ADR 0003
+		// Unter Windows gibt es keine POSIX-Rechte; dort schützt das Benutzerprofil (ADR 0004)
+		assumeTrue(FileSystems.getDefault().supportedFileAttributeViews().contains("posix"));
 		store(file()).update(new Settings("504F94A22F32", "admin", "geheim", "", ""));
 		assertEquals("rw-------", PosixFilePermissions.toString(Files.getPosixFilePermissions(file())));
 		assertEquals("rwx------", PosixFilePermissions.toString(Files.getPosixFilePermissions(file().getParent())));
