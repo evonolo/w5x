@@ -17,6 +17,7 @@ Node-RED-Flows.
 | [features/monthly-report.md](features/monthly-report.md) | Feature „Monatsbericht" (Verhalten, Regeln, Akzeptanz) |
 | [features/settings.md](features/settings.md) | Feature „Einstellungen" (Miniserver-Verbindung, Berichtskopf, lokale Speicherung) |
 | [features/help-page.md](features/help-page.md) | Feature „Hilfeseite" (Erklärung der Log-Auswertung, manuelle Prüfung) |
+| [ui/theme.md](ui/theme.md) | UI: Theme und Bedienung (Loxone-Anmutung, TH-*) |
 | [api/report-api.md](api/report-api.md) | REST-API-Contract |
 | [open-questions.md](open-questions.md) | Offene Fragen (nicht autoritativ) |
 | [decisions/0001-stateless-report.md](decisions/0001-stateless-report.md) | ADR: Stateless-Report, kein Persistenzspeicher |

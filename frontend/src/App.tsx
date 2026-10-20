@@ -3,6 +3,7 @@ import type { ReportView, SettingsView } from './types'
 import { fetchReport, fetchSettings, reportPdfUrl } from './api'
 import Help from './Help'
 import Settings from './Settings'
+import { IconBolt, IconClock, IconDownload, IconHelp, IconPlug, IconReport, IconSettings } from './Icons'
 
 const MONTHS = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
@@ -79,15 +80,18 @@ export default function App() {
 
   return (
     <div className="page">
-      <header className="app-header">
-        <div>
-          <h1>Ladesitzungsbericht</h1>
-          <p className="subtitle">Wallbox-Auswertung pro Monat</p>
+      <header className="app-bar">
+        <div className="brand">
+          <span className="brand-mark"><IconBolt /></span>
+          <div>
+            <h1>Ladesitzungsbericht</h1>
+            <p className="subtitle">Wallbox-Auswertung pro Monat</p>
+          </div>
         </div>
-        <nav className="app-nav">
-          <a href="#" className={view === 'report' ? 'active' : ''}>Bericht</a>
-          <a href="#einstellungen" className={view === 'settings' ? 'active' : ''}>Einstellungen</a>
-          <a href="#hilfe" className={view === 'help' ? 'active' : ''}>Hilfe</a>
+        <nav className="app-nav" aria-label="Hauptnavigation">
+          <a href="#" className={view === 'report' ? 'active' : ''}><IconReport /><span>Bericht</span></a>
+          <a href="#einstellungen" className={view === 'settings' ? 'active' : ''}><IconSettings /><span>Einstellungen</span></a>
+          <a href="#hilfe" className={view === 'help' ? 'active' : ''}><IconHelp /><span>Hilfe</span></a>
         </nav>
       </header>
 
@@ -104,7 +108,7 @@ export default function App() {
             </div>
           )}
 
-          <section className="controls">
+          <section className="card controls">
             <label>
               Monat
               <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
@@ -128,7 +132,7 @@ export default function App() {
                 {loading ? 'Lädt …' : 'Bericht anzeigen'}
               </button>
               <button className="secondary" onClick={downloadPdf} disabled={!ready}>
-                PDF herunterladen
+                <IconDownload /> PDF
               </button>
             </div>
           </section>
@@ -146,43 +150,51 @@ function Report({ report }: { report: ReportView }) {
   return (
     <section className="report">
       <div className="report-head">
-        <div>
-          <strong>{report.location}</strong>
-          <div className="muted">
-            Wallbox: {report.wallbox} · Zeitraum: {String(report.month).padStart(2, '0')}/{report.year}
-          </div>
-          <div className="muted">
-            Erstellt: {report.generatedDate}, {report.generatedTime} Uhr
-          </div>
+        <h2>{report.location || 'Wallbox'}</h2>
+        <div className="muted">
+          {report.wallbox && <>Wallbox {report.wallbox} · </>}
+          {MONTHS[report.month - 1]} {report.year} · erstellt {report.generatedDate}, {report.generatedTime} Uhr
         </div>
-        <dl className="totals">
-          <div><dt>Sitzungen</dt><dd>{report.sessionCount}</dd></div>
-          <div><dt>Gesamte Energie</dt><dd>{report.totalEnergyKwh} kWh</dd></div>
-          <div><dt>Gesamte Ladedauer</dt><dd>{report.totalDurationFormatted}</dd></div>
-        </dl>
       </div>
 
+      <dl className="tiles">
+        <div className="tile">
+          <dt><IconPlug /> Sitzungen</dt>
+          <dd>{report.sessionCount}</dd>
+        </div>
+        <div className="tile">
+          <dt><IconBolt /> Gesamte Energie</dt>
+          <dd>{report.totalEnergyKwh}<small>kWh</small></dd>
+        </div>
+        <div className="tile">
+          <dt><IconClock /> Gesamte Ladedauer</dt>
+          <dd className="tile-duration">{report.totalDurationFormatted}</dd>
+        </div>
+      </dl>
+
       {report.sessions.length === 0 ? (
-        <p className="muted">Keine Ladesitzungen in diesem Zeitraum.</p>
+        <p className="card empty">Keine Ladesitzungen in diesem Zeitraum.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Energie</th>
-              <th>Dauer</th>
-              <th>Zeitraum</th>
-            </tr>
-          </thead>
-          <tbody>
-            {report.sessions.map((s, i) => (
-              <tr key={i}>
-                <td>{s.energyKwh} kWh</td>
-                <td>{s.durationFormatted}</td>
-                <td>{s.start} – {s.stop}</td>
+        <div className="card sessions">
+          <table>
+            <thead>
+              <tr>
+                <th>Energie</th>
+                <th>Dauer</th>
+                <th>Zeitraum</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {report.sessions.map((s, i) => (
+                <tr key={i}>
+                  <td className="energy" data-label="Energie">{s.energyKwh} kWh</td>
+                  <td data-label="Dauer">{s.durationFormatted}</td>
+                  <td data-label="Zeitraum">{s.start} – {s.stop}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   )

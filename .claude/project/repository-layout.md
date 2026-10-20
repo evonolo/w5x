@@ -26,7 +26,8 @@ w5x/
     src/test/java/...      Parser-, Report-, Loxone-Client-, Settings-Tests
     src/test/resources/samples/wallbox-sample.log synthetische Beispiel-Logdatei
   frontend/                React + TS + Vite
-    src/                   App, API-Client, Komponenten (Settings.tsx: Einstellungen, Help.tsx: Hilfeseite)
+    src/                   App, API-Client, Komponenten (Settings.tsx: Einstellungen, Help.tsx: Hilfeseite,
+                           Icons.tsx: Symbole, index.css: Theme gemäß docs/ui/theme.md)
 ```
 
 ## Namenskonventionen
